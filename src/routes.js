@@ -1,0 +1,23 @@
+const express = require('express');
+const router = express.Router();
+const AuthController = require('./controllers/AuthController');
+const CompanyController = require('./controllers/CompanyController');
+
+//Login
+router.get('/verifyToken', AuthController.validateTokenByQuery);
+router.post('/verifyLogin', AuthController.verifyLogin);
+
+//CRUD (Protected)
+router.get('/getUsers', AuthController.getUsers);
+router.post('/createUser', AuthController.createUser);
+router.put('/updateUser', AuthController.updateUser);
+router.delete('/deleteUser', AuthController.deleteUser);
+
+
+//Filters
+router.get('/getCnaes', CompanyController.getCnaes);
+router.post('/getAllIdsFilter', CompanyController.getAllIdsFilter);
+router.post('/getItemsByIds', CompanyController.getItemsByIds);
+router.get('/debug/cnaes', CompanyController.debugCnaes);
+
+module.exports = router;

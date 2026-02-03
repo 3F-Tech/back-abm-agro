@@ -1,0 +1,140 @@
+generator client {
+
+  provider = "prisma-client-js"
+
+}
+
+
+
+datasource db {
+
+  provider = "postgresql"
+
+  url      = env("DATABASE_URL")
+
+}
+
+
+
+
+
+model User {
+
+  id        Int      @id @default(autoincrement())
+
+  name String   @db.VarChar(100)
+
+  email     String   @unique @db.VarChar(100)
+
+  password  String   @db.VarChar(255)
+
+  role      Role     @default(COMUM)
+
+ createdAt DateTime @default(now()) @map("created-at")
+
+ updatedAt DateTime @updatedAt     @map("updated-at")
+
+
+
+  @@map("user")
+
+}
+
+
+
+enum Role {
+
+  ADMIN
+
+  COMUM
+
+}
+
+
+
+model Clientes {
+  id BigInt @id @default(autoincrement())
+
+  // -- identificacao e contato --
+  a1Nome    String? @map("a1-nome")
+  a1Cgc     String? @map("a1-cgc")
+  email     String?
+  a1Ddd     String? @map("a1-ddd")
+  a1Tel     String? @map("a1-tel")
+  a1Celular String? @map("a1-celular")
+  a1Tel3    String? @map("a1-tel3")
+  a1Tel4    String? @map("a1-tel4")
+  a1Tel5    String? @map("a1-tel5")
+  a1Tel6    String? @map("a1-tel6")
+  a1Tel7    String? @map("a1-tel7")
+  a1Endcob  String? @map("a1-endcob")
+  a1Bairroc String? @map("a1-bairroc")
+  a1Munc    String? @map("a1-munc")
+  a1Cepc    String? @map("a1-cepc")
+
+  // -- endereco de entrega --
+  enderecoEntrega  String? @map("endereco-entrega")
+  bairroEntrega    String? @map("bairro-entrega")
+  municipioEntrega String? @map("municipio-entrega")
+  cepEntrega       String? @map("cep-entrega")
+
+  // -- endereco de cadastro --
+  enderecoCadastro  String? @map("endereco-cadastro")
+  bairroCadastro    String? @map("bairro-cadastro")
+  municipioCadastro String? @map("municipio-cadastro")
+
+  // -- classificacao --
+  tipo        String? @map("tipo")
+  grupoVendas String? @map("grupo-vendas")
+  segmento1   String? @map("segmento1")
+  segmento2   String? @map("segmento2")
+  cria        String?
+
+  // -- metricas --
+  nrCompras Int?      @map("nr-compras")
+  a1Mcompra DateTime? @map("a1-mcompra")
+
+  // -- regionalizacao --
+  codMeso  String? @map("cod-meso")
+  meso     String?
+  codMicro String? @map("cod-micro")
+  micro    String?
+
+  // -- dados pessoais e mapa --
+  dataNascimento DateTime? @map("data-nascimento")
+  endMapa        String?   @map("end-mapa")
+
+  // -- auditoria --
+  createdAt DateTime @default(now()) @map("created-at")
+
+  // -- endereco principal (cobranca) --
+  a1Estc         String? @map("a1-estc")
+  estadoEntrega  String? @map("estado-entrega")
+  estadoCadastro String? @map("estado-cadastro")
+
+  a1Fatacum      Decimal? @map("a1-fatacum") // Aceita qualquer precisão
+  ticketMedio    Decimal? @map("ticket-medio")
+
+// --- ÁREA DE ÍNDICES (Adicione isto no final do model) ---
+  
+  // 1. Índice para busca rápida por CNPJ (exata)
+  @@index([a1Cgc])
+
+  // 2. Índice Composto: Estado e Cidade
+  // Isso otimiza buscas "Estado=SP" E "Estado=SP + Cidade=Campinas"
+  @@index([a1Estc, a1Munc])
+
+  // 3. Índice para Segmento/CNAE
+  @@index([segmento1])
+
+  // 4. (Opcional) Índice para Nome se for fazer busca "começa com..."
+  @@index([a1Nome]) 
+
+  @@map("clientes")
+}
+
+
+
+
+
+
