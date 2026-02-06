@@ -144,17 +144,6 @@ exports.validateTokenByQuery = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Busca dados atualizados do usuário, pois o token pode ter dados antigos
-        // Vamos usar o prisma diretamente aqui ou criar um metodo no service se precisar
-        // Como o AuthService ja tem getAllUsers, vamos fazer uma busca manual ou adaptar
-        // Na verdade, o decoded tem o ID. Vou buscar no AuthService.
-        // O AuthService não tem um getById publico, mas tem verifyUser.
-        // Vou usar o prisma do AuthService importado indiretamente ou fazer a query aqui se tiver acesso.
-        // O controller não tem acesso direto ao prisma, vou chamar AuthService.getUserById(decoded.id)
-        // Preciso criar esse metodo no AuthService primeiro? Sim. Mas vou tentar usar o que tenho.
-        // O update user faz busca por ID. Vou adicionar um getUserById no AuthService depois.
-        // Por hora, vou assumir que posso adicionar getUserById no AuthService e chamar aqui.
-
         const user = await AuthService.getUserById(decoded.id);
 
         if (!user) {

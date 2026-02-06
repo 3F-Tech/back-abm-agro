@@ -133,6 +133,19 @@ model Clientes {
   @@map("clientes")
 }
 
+model audience_segment {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  description    String?
+  created_by     String?
+  cidade         String?
+  estado         String?
+  cnae           String?
+  locations      String?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}
+
 
 
 
