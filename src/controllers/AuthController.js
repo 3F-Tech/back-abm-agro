@@ -168,3 +168,96 @@ exports.validateTokenByQuery = async (req, res) => {
         });
     }
 };
+
+exports.validateSSO = async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        // Validate input
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                error: 'Token não fornecido'
+            });
+        }
+
+        // Validate SSO token signature and claims
+        const decoded = await AuthService.validateSSOToken(token);
+
+        // Extract email from payload
+        const email = decoded.email;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email não encontrado no token'
+            });
+        }
+
+        // Find user in local database
+        const user = await AuthService.getUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuário não cadastrado neste sistema'
+            });
+        }
+
+        // Generate our own session token
+        const sessionToken = jwt.sign(
+            {
+                id: user.id,
+                role: user.role,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '3h'
+            }
+        );
+
+        // Return successful authentication
+        return res.status(200).json({
+            success: true,
+            message: 'Autenticação SSO realizada com sucesso',
+            token: sessionToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        // Handle specific errors
+        if (error.message === 'INVALID_SSO_TOKEN') {
+            return res.status(401).json({
+                success: false,
+                error: 'Token SSO inválido ou expirado'
+            });
+        }
+
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                error: 'Token SSO malformado'
+            });
+        }
+
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                error: 'Token SSO expirado'
+            });
+        }
+
+        // Generic error handler
+        console.error('SSO Validation Error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erro interno ao validar SSO'
+        });
+    }
+};

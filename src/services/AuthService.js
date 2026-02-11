@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const AuthService = {
 
@@ -104,6 +105,35 @@ const AuthService = {
                 return null;
             }
             throw error;
+        }
+    },
+
+    // SSO Authentication Methods
+    async getUserByEmail(email) {
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true
+            }
+        });
+        return user;
+    },
+
+    async validateSSOToken(token) {
+        try {
+            // Decode and verify the token using RS256 algorithm
+            const decoded = jwt.verify(token, process.env.SSO_PUBLIC_KEY, {
+                algorithms: ['RS256'],
+                clockTolerance: 60 // 60 seconds leeway for clock sync
+            });
+
+            return decoded;
+        } catch (error) {
+            throw new Error('INVALID_SSO_TOKEN');
         }
     }
 }

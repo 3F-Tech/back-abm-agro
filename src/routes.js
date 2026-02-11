@@ -12,6 +12,9 @@ router.get('/', (req, res) => {
 router.get('/verifyToken', AuthController.validateTokenByQuery);
 router.post('/verifyLogin', AuthController.verifyLogin);
 
+//SSO Authentication
+router.post('/auth/sso-validate', AuthController.validateSSO);
+
 //CRUD (Protected)
 router.get('/getUsers', AuthController.getUsers);
 router.post('/createUser', AuthController.createUser);
