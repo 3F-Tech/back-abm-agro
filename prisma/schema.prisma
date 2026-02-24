@@ -1,153 +1,362 @@
 generator client {
-
-  provider = "prisma-client-js"
-
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
 }
-
-
 
 datasource db {
-
   provider = "postgresql"
-
   url      = env("DATABASE_URL")
-
+  schemas  = ["cnpj", "public"]
 }
-
-
-
-
 
 model User {
-
-  id        Int      @id @default(autoincrement())
-
-  name String   @db.VarChar(100)
-
-  email     String   @unique @db.VarChar(100)
-
-  password  String   @db.VarChar(255)
-
-  role      Role     @default(COMUM)
-
- createdAt DateTime @default(now()) @map("created-at")
-
- updatedAt DateTime @updatedAt     @map("updated-at")
-
-
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  email     String    @unique @db.VarChar(100)
+  password  String    @db.VarChar(255)
+  role      String?   @default("COMUM") @db.VarChar(20)
+  createdAt DateTime? @default(now()) @map("created-at") @db.Timestamptz(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated-at") @db.Timestamptz(6)
 
   @@map("user")
-
+  @@schema("public")
 }
-
-
-
-enum Role {
-
-  ADMIN
-
-  COMUM
-
-}
-
-
 
 model Clientes {
-  id BigInt @id @default(autoincrement())
-
-  // -- identificacao e contato --
-  a1Nome    String? @map("a1-nome")
-  a1Cgc     String? @map("a1-cgc")
-  email     String?
-  a1Ddd     String? @map("a1-ddd")
-  a1Tel     String? @map("a1-tel")
-  a1Celular String? @map("a1-celular")
-  a1Tel3    String? @map("a1-tel3")
-  a1Tel4    String? @map("a1-tel4")
-  a1Tel5    String? @map("a1-tel5")
-  a1Tel6    String? @map("a1-tel6")
-  a1Tel7    String? @map("a1-tel7")
-  a1Endcob  String? @map("a1-endcob")
-  a1Bairroc String? @map("a1-bairroc")
-  a1Munc    String? @map("a1-munc")
-  a1Cepc    String? @map("a1-cepc")
-
-  // -- endereco de entrega --
-  enderecoEntrega  String? @map("endereco-entrega")
-  bairroEntrega    String? @map("bairro-entrega")
-  municipioEntrega String? @map("municipio-entrega")
-  cepEntrega       String? @map("cep-entrega")
-
-  // -- endereco de cadastro --
-  enderecoCadastro  String? @map("endereco-cadastro")
-  bairroCadastro    String? @map("bairro-cadastro")
-  municipioCadastro String? @map("municipio-cadastro")
-
-  // -- classificacao --
-  tipo        String? @map("tipo")
-  grupoVendas String? @map("grupo-vendas")
-  segmento1   String? @map("segmento1")
-  segmento2   String? @map("segmento2")
-  cria        String?
-
-  // -- metricas --
-  nrCompras Int?      @map("nr-compras")
-  a1Mcompra DateTime? @map("a1-mcompra")
-
-  // -- regionalizacao --
-  codMeso  String? @map("cod-meso")
-  meso     String?
-  codMicro String? @map("cod-micro")
-  micro    String?
-
-  // -- dados pessoais e mapa --
-  dataNascimento DateTime? @map("data-nascimento")
-  endMapa        String?   @map("end-mapa")
-
-  // -- auditoria --
-  createdAt DateTime @default(now()) @map("created-at")
-
-  // -- endereco principal (cobranca) --
-  a1Estc         String? @map("a1-estc")
-  estadoEntrega  String? @map("estado-entrega")
-  estadoCadastro String? @map("estado-cadastro")
-
-  a1Fatacum      Decimal? @map("a1-fatacum") // Aceita qualquer precisão
-  ticketMedio    Decimal? @map("ticket-medio")
-
-// --- ÁREA DE ÍNDICES (Adicione isto no final do model) ---
-  
-  // 1. Índice para busca rápida por CNPJ (exata)
-  @@index([a1Cgc])
-
-  // 2. Índice Composto: Estado e Cidade
-  // Isso otimiza buscas "Estado=SP" E "Estado=SP + Cidade=Campinas"
-  @@index([a1Estc, a1Munc])
-
-  // 3. Índice para Segmento/CNAE
-  @@index([segmento1])
-
-  // 4. (Opcional) Índice para Nome se for fazer busca "começa com..."
-  @@index([a1Nome]) 
+  id                BigInt    @id @default(autoincrement())
+  a1Nome            String?   @map("a1-nome")
+  a1Cgc             String?   @map("a1-cgc")
+  email             String?
+  a1Ddd             String?   @map("a1-ddd")
+  a1Tel             String?   @map("a1-tel")
+  a1Celular         String?   @map("a1-celular")
+  a1Tel3            String?   @map("a1-tel3")
+  a1Tel4            String?   @map("a1-tel4")
+  a1Tel5            String?   @map("a1-tel5")
+  a1Tel6            String?   @map("a1-tel6")
+  a1Tel7            String?   @map("a1-tel7")
+  a1Endcob          String?   @map("a1-endcob")
+  a1Bairroc         String?   @map("a1-bairroc")
+  a1Munc            String?   @map("a1-munc")
+  a1Cepc            String?   @map("a1-cepc")
+  enderecoEntrega   String?   @map("endereco-entrega")
+  bairroEntrega     String?   @map("bairro-entrega")
+  municipioEntrega  String?   @map("municipio-entrega")
+  cepEntrega        String?   @map("cep-entrega")
+  enderecoCadastro  String?   @map("endereco-cadastro")
+  bairroCadastro    String?   @map("bairro-cadastro")
+  municipioCadastro String?   @map("municipio-cadastro")
+  tipo              String?   @map("tipo")
+  grupoVendas       String?   @map("grupo-vendas")
+  segmento1         String?   @map("segmento1")
+  segmento2         String?   @map("segmento2")
+  cria              String?
+  nrCompras         Int?      @map("nr-compras")
+  a1Mcompra         DateTime? @map("a1-mcompra") @db.Timestamp(6)
+  codMeso           String?   @map("cod-meso")
+  meso              String?
+  codMicro          String?   @map("cod-micro")
+  micro             String?
+  dataNascimento    DateTime? @map("data-nascimento") @db.Timestamp(6)
+  endMapa           String?   @map("end-mapa")
+  createdAt         DateTime? @default(now()) @map("created-at") @db.Timestamptz(6)
+  a1Estc            String?   @map("a1-estc")
+  estadoEntrega     String?   @map("estado-entrega")
+  estadoCadastro    String?   @map("estado-cadastro")
+  a1Fatacum         Decimal?  @map("a1-fatacum") @db.Decimal
+  ticketMedio       Decimal?  @map("ticket-medio") @db.Decimal
 
   @@map("clientes")
+  @@schema("public")
 }
 
 model audience_segment {
-  id             String   @id @default(uuid()) @db.Uuid
-  name           String
-  description    String?
-  created_by     String?
-  cidade         String?
-  estado         String?
-  cnae           String?
-  locations      String?
-  created_at     DateTime @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  created_by  String?
+  cidade      String?
+  estado      String?
+  cnae        String?
+  locations   String?
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime? @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@schema("public")
 }
 
+model Empresa {
+  cnpj_basico                     String              @id @db.Char(8)
+  razao_social                    String
+  codigo_natureza_juridica        String              @db.Char(4)
+  codigo_qualificacao_responsavel String              @db.Char(2)
+  capital_social                  String?
+  porte_empresa                   String?             @db.Char(2)
+  ente_federativo_responsavel     String?
+  naturezas_juridicas             naturezas_juridicas @relation(fields: [codigo_natureza_juridica], references: [codigo_natureza_juridica], onDelete: NoAction, onUpdate: NoAction, map: "fk_emp_natureza")
+  simples                         simples[]
+  socios                          Socio[]
+  estabelecimentos                Estabelecimento[]
 
+  @@index([capital_social], map: "idx_empresa_capital_social")
+  @@index([porte_empresa], map: "idx_empresa_porte")
+  @@index([razao_social(ops: raw("gin_trgm_ops"))], map: "idx_empresa_razao_social_trgm", type: Gin)
+  @@index([capital_social], map: "idx_empresas_capital_social")
+  @@index([cnpj_basico], map: "idx_empresas_cnpj_basico")
+  @@index([porte_empresa], map: "idx_empresas_porte")
+  @@index([razao_social(ops: raw("gin_trgm_ops"))], map: "idx_empresas_razao_social_gin", type: Gin)
+  @@index([razao_social(ops: raw("gin_trgm_ops"))], map: "idx_empresas_razao_social_trgm", type: Gin)
+  @@map("empresas")
+  @@schema("cnpj")
+}
 
+model Estabelecimento {
+  cnpj_basico                 String
+  cnpj_ordem                  String
+  cnpj_dv                     String
+  identificador_matriz_filial String?
+  nome_fantasia               String?
+  data_situacao_cadastral     String?
+  motivo_situacao_cadastral   String?
+  nome_cidade_exterior        String?
+  pais                        String?
+  data_inicio_atividade       String?
+  cnae_fiscal_principal       String?
+  cnae_fiscal_secundaria      String?
+  tipo_logradouro             String?
+  logradouro                  String?
+  numero                      String?
+  complemento                 String?
+  bairro                      String?
+  cep                         String?
+  uf                          String?
+  municipio                   String?
+  ddd1                        String?
+  telefone1                   String?
+  ddd2                        String?
+  telefone2                   String?
+  ddd_fax                     String?
+  fax                         String?
+  correio_eletronico          String?
+  situacao_especial           String?
+  data_situacao_especial      String?
+  lat                         Float?
+  long                        Float?
+  situation                   String?
+  classification              String?
+  consistency_score           Int?
+  documento_identificador     String?
+  segmento                    String?
 
+  empresa                     Empresa @relation(fields: [cnpj_basico], references: [cnpj_basico])
 
+  @@id([cnpj_basico, cnpj_ordem, cnpj_dv])
+  @@map("estabelecimentos")
+  @@schema("cnpj")
+}
 
+model Socio {
+  cnpj_basico                String
+  tipo_socio                 String?
+  nome_socio                 String
+  cnpj_cpf_socio             String
+  qualificacao_socio         String?
+  data_entrada               String?
+  pais_socio                 String?
+  representante_legal        String?
+  nome_representante         String?
+  qualificacao_representante String?
+  faixa_etaria               String?
+  empresa                    Empresa @relation(fields: [cnpj_basico], references: [cnpj_basico], onDelete: NoAction, onUpdate: NoAction, map: "fk_socio_empresa")
+  qualificacoes              qualificacoes? @relation(fields: [qualificacao_socio], references: [codigo_qualificacao], onDelete: NoAction, onUpdate: NoAction, map: "fk_socio_qualificacao")
+
+  @@id([cnpj_basico, nome_socio, cnpj_cpf_socio])
+  @@index([cnpj_basico], map: "idx_socios_cnpj_basico")
+  @@map("socios")
+  @@schema("cnpj")
+}
+
+model Cnae {
+  codigo_cnae    String @id
+  descricao_cnae String
+
+  @@map("cnaes")
+  @@schema("cnpj")
+}
+
+model Municipio {
+  codigo_municipio String @id
+  nome_municipio   String
+
+  @@index([nome_municipio], map: "idx_municipios_nome")
+  @@index([nome_municipio(ops: raw("gin_trgm_ops"))], map: "idx_municipios_nome_gin", type: Gin)
+  @@map("municipios")
+  @@schema("cnpj")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model estabelecimentos_backup {
+  cnpj_basico                 String?
+  cnpj_ordem                  String?
+  cnpj_dv                     String?
+  identificador_matriz_filial String?
+  nome_fantasia               String?
+  data_situacao_cadastral     String?
+  motivo_situacao_cadastral   String?
+  nome_cidade_exterior        String?
+  pais                        String?
+  data_inicio_atividade       String?
+  cnae_fiscal_principal       String?
+  cnae_fiscal_secundaria      String?
+  tipo_logradouro             String?
+  logradouro                  String?
+  numero                      String?
+  complemento                 String?
+  bairro                      String?
+  cep                         String?
+  uf                          String?
+  municipio                   String?
+  ddd1                        String?
+  telefone1                   String?
+  ddd2                        String?
+  telefone2                   String?
+  ddd_fax                     String?
+  fax                         String?
+  correio_eletronico          String?
+  situacao_especial           String?
+  data_situacao_especial      String?
+  lat                         Float?
+  long                        Float?
+  situation                   String?
+  classification              String?
+  consistency_score           Int?
+  documento_identificador     String?
+
+  @@ignore
+  @@schema("cnpj")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model fazendas_110k {
+  a1_nome                String?
+  a1_endcob              String?
+  a1_bairroc             String?
+  a1_munc                String?
+  a1_estc                String?
+  a1_cepc                String?
+  a1_cgc                 String?
+  a1_ddd                 String?
+  a1_tel                 String?
+  a1_celular             String?
+  endereco_entrega       String?
+  bairro_entrega         String?
+  municipio_entrega      String?
+  estado_entrega         String?
+  cep_entrega            String?
+  a1_tel3                String?
+  a1_tel4                String?
+  a1_tel5                String?
+  a1_tel6                String?
+  a1_tel7                String?
+  endereco_cadastro      String?
+  bairro_cadastro        String?
+  municipio_cadastro     String?
+  estado_cadastro        String?
+  tipo                   String?
+  grupo_vendas           String?
+  segmento1              String?
+  segmento2              String?
+  nr_compras             Decimal? @db.Decimal
+  a1_mcompra             Decimal? @db.Decimal
+  a1_fatacum             Decimal? @db.Decimal
+  ticket_medio           Decimal? @db.Decimal
+  email                  String?
+  cod_meso               String?
+  meso                   String?
+  cod_micro              String?
+  micro                  String?
+  data_nascimento        String?
+  end_mapa               String?
+  cnae_codigo            String?  @db.Char(7)
+  descricao_cnae_oficial String?
+  cnae_fiscal_secundaria String?
+  a1_codmunc             String?  @db.Char(4)
+
+  @@ignore
+  @@schema("cnpj")
+}
+
+model motivos {
+  codigo_motivo    String @id
+  descricao_motivo String
+
+  @@schema("cnpj")
+}
+
+model naturezas_juridicas {
+  codigo_natureza_juridica    String    @id
+  descricao_natureza_juridica String
+  empresas                    Empresa[]
+
+  @@schema("cnpj")
+}
+
+model paises {
+  codigo_pais    String @id
+  descricao_pais String
+
+  @@schema("cnpj")
+}
+
+model qualificacoes {
+  codigo_qualificacao    String  @id
+  descricao_qualificacao String
+  socios                 Socio[]
+
+  @@schema("cnpj")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model simples {
+  cnpj_basico           String   @id
+  opcao_simples         String?
+  data_opcao_simples    String?
+  data_exclusao_simples String?
+  opcao_mei             String?
+  data_opcao_mei        String?
+  data_exclusao_mei     String?
+  empresas              Empresa? @relation(fields: [cnpj_basico], references: [cnpj_basico], onDelete: NoAction, onUpdate: NoAction, map: "fk_simples_empresa")
+
+  @@index([cnpj_basico], map: "idx_simples_cnpj_basico")
+  @@map("simples")
+  @@schema("cnpj")
+}
+
+model user {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  email      String   @unique(map: "uq_user_email") @db.VarChar(100)
+  password   String   @db.VarChar(255)
+  role       Role     @default(COMUM)
+  created_at DateTime @default(now()) @map("created-at")
+  updated_at DateTime @default(now()) @map("updated-at")
+
+  @@schema("cnpj")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model empresas_stg {
+  cnpj String?
+  nome String?
+  uf   String?
+
+  @@ignore
+  @@schema("public")
+}
+
+enum Role {
+  COMUM
+  ADMIN
+
+  @@schema("cnpj")
+}
