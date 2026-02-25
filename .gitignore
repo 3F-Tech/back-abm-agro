@@ -1,5 +1,26 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Dependências
+node_modules/
+dist/
+build/
 
+# Variáveis de Ambiente (Segurança!)
+.env
+.env.local
+.env.*
+!.env.example
+
+# Arquivos de Sistema e Backup (O seu caso específico)
+*- Copia.*
+* - Copia/
+.DS_Store
+Thumbs.db
+
+# Logs e Diagnósticos
+*.log
+diag_*.txt
+diag_*.json
+git_status.txt
+
+# Banco de Dados / Prisma
 /src/generated/prisma
+/prisma/migrations/

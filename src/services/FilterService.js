@@ -637,6 +637,11 @@ module.exports = {
       }
     }
 
+    // 8. Proteção contra dados sujos (cnpjs nulos/vazios que quebram o Prisma)
+    where.AND.push({
+      cnpj_basico: { gt: "" }
+    });
+
     return where;
   },
 
