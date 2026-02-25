@@ -1,0 +1,35 @@
+{
+  "name": "ADSET_GEO_TESTE_ESTRADAS",
+  "campaign_id": "SEU_CAMPAIGN_ID_AQUI",
+  "optimization_goal": "IMPRESSIONS",
+  "billing_event": "IMPRESSIONS",
+  "bid_amount": 1000,
+  "daily_budget": 2000,
+  "status": "PAUSED",
+  "targeting": {
+    "geo_locations": {
+      "custom_locations": [
+        {
+          "address_string": "RODOVIA RAPOSO TAVARES, QUINTA DOS FLAMBOYANTS, Assis, SP, 19810000, Brazil",
+          "radius": 2,
+          "distance_unit": "kilometer"
+        },
+        {
+          "address_string": "ESTRADA MUNICIPAL DE MONTE ALTO A TAQUARITINGA, ARIEAS, Monte Alto, SP, 15910000, Brazil",
+          "radius": 2,
+          "distance_unit": "kilometer"
+        },
+        {
+          "address_string": "RUA IVO JANSON, PARTENON, Porto Alegre, RS, 91530070, Brazil",
+          "radius": 2,
+          "distance_unit": "kilometer"
+        },
+        {
+          "address_string": "EST. VIC. MUNICIPAL JERIQUARA A RIB.CORRENTE, ZONA RURAL, Jeriquara, SP, 14450000, Brazil",
+          "radius": 2,
+          "distance_unit": "kilometer"
+        }
+      ]
+    }
+  }
+}

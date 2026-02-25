@@ -5,18 +5,30 @@ const jwt = require('jsonwebtoken');
 const AuthService = {
 
     async verifyUser(email, password) {
+        console.log(`[AuthService] Verificando usuário: ${email}`);
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
+            console.log(`[AuthService] Usuário não encontrado: ${email}`);
             throw new Error('USER_NOT_FOUND');
         }
+
+        console.log(`[AuthService] Usuário encontrado. Comparando senhas...`);
+        console.log(`[AuthService] Password stored starts with: ${user.password.substring(0, 4)}...`);
 
         const senhaBate = await bcrypt.compare(password, user.password);
 
         if (!senhaBate) {
+            // Debug: Check if it's stored as plain text
+            if (password === user.password) {
+                console.log(`[AuthService] AVISO: A senha no banco está em TEXTO PLANO!`);
+                return user; // Log in anyway for now if it matches plain text
+            }
+            console.log(`[AuthService] Senha INCORRETA para: ${email}`);
             throw new Error('INCORRECT_PASSWORD');
         }
 
+        console.log(`[AuthService] Login bem-sucedido para: ${email}`);
         return user;
     },
 

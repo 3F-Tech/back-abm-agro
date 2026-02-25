@@ -12,14 +12,60 @@ function ensureArray(v) {
 
 
 const CompanyController = {
+    _serializeItem(item) {
+        const porteMapping = { "01": "NÃO INFORMADO", "02": "MICRO EMPRESA (ME)", "03": "EMPRESA DE PEQUENO PORTE (EPP)", "04": "EPP (VARIAÇÃO)", "05": "DEMAIS" };
+        const situacaoMapping = { "01": "NULA", "02": "ATIVA", "03": "SUSPENSA", "04": "INAPTA", "08": "BAIXADA" };
+
+        const cnpjCompleto = String(item.cnpj || "").replace(/\D/g, "").padStart(14, "0");
+        const cnpjFormatado = cnpjCompleto.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+
+        // Suporta tanto campos diretos (flatten) quanto relação empresa { ... }
+        const empresa = item.empresa || {};
+        const razaoSocial = item.razao_social || empresa.razao_social || null;
+        const porteCodigo = item.porte_empresa || empresa.porte_empresa || null;
+        const capitalSocial = item.capital_social || empresa.capital_social || null;
+        const naturezaJuridica = item.codigo_natureza_juridica || empresa.codigo_natureza_juridica || null;
+        const situacaoCodigo = item.situacao_cadastral;
+
+        return {
+            id: cnpjCompleto,
+            cnpj: cnpjFormatado,
+            nome_fantasia: item.nome_fantasia || null,
+            razao_social: razaoSocial,
+
+            uf: item.uf || null,
+            municipio: item.cidade_nome || item.municipio || null,
+
+            cnae_fiscal_principal: item.cnae_fiscal_principal || null,
+            cnae_primario: item.cnae_descricao || item.cnae_fiscal_principal || null,
+            cnae_fiscal_secundaria: item.cnae_secundaria_descricao || item.cnae_fiscal_secundaria || null,
+
+            email: item.correio_eletronico || null,
+
+            telefone1: item.ddd1 && item.telefone1 ? `(${item.ddd1}) ${item.telefone1}` : (item.telefone1 || ""),
+            telefone2: item.ddd2 && item.telefone2 ? `(${item.ddd2}) ${item.telefone2}` : (item.telefone2 || ""),
+
+            porte: porteMapping[String(porteCodigo || "").padStart(2, "0")] || porteCodigo || "NÃO INFORMADO",
+            situacao_cadastral: situacaoMapping[String(situacaoCodigo || "").padStart(2, "0")] || situacaoCodigo,
+
+            capital_social: capitalSocial,
+            natureza_juridica: naturezaJuridica,
+            classification: item.classification || null,
+        };
+
+    },
 
     async getCnaes(req, res) {
         try {
-            const list = await FilterService.getCrias();
+            const list = await FilterService.getAllCnaes();
             return res.status(200).json(list);
         } catch (error) {
-            console.error("Erro ao listar tipos de Cria:", error);
-            return res.status(500).json({ error: "Erro ao buscar dados." });
+            console.error("Erro ao listar CNAEs:", error);
+            return res.status(500).json({
+                error: "Erro ao buscar dados.",
+                message: error.message,
+                stack: error.stack
+            });
         }
     },
     async getAllIdsFilter(req, res) {
@@ -37,7 +83,13 @@ const CompanyController = {
                 city: ensureArray(filters.city),
                 state: ensureArray(filters.state),
                 cnpj: ensureArray(filters.cnpj),
-                name: typeof filters.name === "string" ? filters.name : (filters.name ? String(filters.name) : "")
+                porteEmpresa: ensureArray(filters.porteEmpresa),
+                name: typeof filters.name === "string" ? filters.name : (filters.name ? String(filters.name) : ""),
+                razaoSocial: typeof filters.razaoSocial === "string" ? filters.razaoSocial : (filters.razaoSocial ? String(filters.razaoSocial) : ""),
+                capitalSocialMin: typeof filters.capitalSocialMin === "string" ? filters.capitalSocialMin : (filters.capitalSocialMin ? String(filters.capitalSocialMin) : ""),
+                capitalSocialMax: typeof filters.capitalSocialMax === "string" ? filters.capitalSocialMax : (filters.capitalSocialMax ? String(filters.capitalSocialMax) : ""),
+                capitalSocialZero: filters.capitalSocialZero === true || filters.capitalSocialZero === 'true',
+                includeTotal: filters.includeTotal === true || filters.includeTotal === 'true'
             };
 
             const safeDecode = (val) => {
@@ -59,6 +111,10 @@ const CompanyController = {
             filters.state = safeDecode(filters.state);
             filters.cnpj = safeDecode(filters.cnpj);
             filters.name = safeDecode(filters.name);
+            filters.razaoSocial = safeDecode(filters.razaoSocial);
+            filters.capitalSocialMin = safeDecode(filters.capitalSocialMin);
+            filters.capitalSocialMax = safeDecode(filters.capitalSocialMax);
+            filters.porteEmpresa = safeDecode(filters.porteEmpresa);
 
             const cleanArr = (arr) => arr.map(x => (typeof x === "string" ? x.trim() : x)).filter(x => x);
             filters.cnae = cleanArr(filters.cnae);
@@ -66,11 +122,17 @@ const CompanyController = {
             filters.city = cleanArr(filters.city);
             filters.state = cleanArr(filters.state);
             filters.cnpj = cleanArr(filters.cnpj);
+            filters.porteEmpresa = cleanArr(filters.porteEmpresa);
 
-            console.log("[Controller] Filtros processados:", JSON.stringify(filters));
+            console.log("[Controller] Filtros recebidos:", {
+                ...filters,
+                cnae: Array.isArray(filters.cnae) ? `Array(${filters.cnae.length})` : filters.cnae,
+                city: Array.isArray(filters.city) ? `Array(${filters.city.length})` : filters.city,
+                cnpj: Array.isArray(filters.cnpj) ? `Array(${filters.cnpj.length})` : filters.cnpj
+            });
 
-            const results = await FilterService.getAllIds(filters);
-            return res.status(200).json(results);
+            const { ids, total } = await FilterService.getAllIds(filters);
+            return res.status(200).json({ ids, total });
 
         } catch (error) {
             console.error("ERRO getAllIdsFilter:", error);
@@ -85,56 +147,102 @@ const CompanyController = {
 
         try {
             const { ids } = req.body;
+            if (!ids || !Array.isArray(ids)) return res.status(400).json({ error: "Envie um array de 'ids'." });
 
-            if (!ids || !Array.isArray(ids)) {
-                return res.status(400).json({ error: "Envie um array de 'ids'." });
-            }
-
-            const idsList = ids
-                .filter(id => id && id.toString().trim() !== "")
-                .map(id => BigInt(id));
-
+            const idsList = ids.filter(id => id && id.toString().trim() !== "").map(id => String(id).trim());
             if (idsList.length === 0) return res.status(200).json([]);
 
             const results = await FilterService.getByIds(idsList);
-
-            const serializedResults = results.map(item => ({
-                ...item,
-                id: item.id.toString()
-            }));
+            const serializedResults = results.map(item => CompanyController._serializeItem(item));
 
             return res.status(200).json(serializedResults);
-
         } catch (error) {
             console.error("ERRO getItemsByIds:", error);
             return res.status(500).json({ error: "Erro ao buscar detalhes", details: error.message });
         }
     },
 
-    async debugCnaes(req, res) {
+    async search(req, res) {
         try {
+            const { filters = {}, page = 1, pageSize = 20 } = req.body || {};
 
-            const amostra = await prisma.clientes.findMany({
-                where: {
-                    OR: [
-                        { segmento1: { not: null, not: '' } },
-                        { cria: { not: null, not: '' } }
-                    ]
-                },
-                select: {
-                    id: true,
-                    a1Nome: true,
-                    segmento1: true,
-                    cria: true
-                },
-                take: 20
+            const t0 = Date.now();
+            const { items, total, pageCount, hasMore } = await FilterService.searchEstablishments(filters, page, pageSize);
+            const t1 = Date.now();
+
+            const serialized = items.map(item => CompanyController._serializeItem(item));
+            const t2 = Date.now();
+
+            console.log('[search] sql_ms=', t1 - t0, 'serialize_ms=', t2 - t1, 'rows=', items.length);
+
+            return res.json({ items: serialized, total, pageCount, hasMore });
+        } catch (error) {
+            console.error("ERRO search:", error);
+            return res.status(500).json({ error: "Erro na busca", details: error.message });
+        }
+    },
+
+    async exportCsv(req, res) {
+        try {
+            const { filters, selectAll, excludedIds, ids, selection } = req.body;
+
+            // Consolida a lógica de seleção em um único objeto para o Service
+            const finalSelection = selection || {
+                all: selectAll === true || selectAll === 'true',
+                manualIds: ids || [],
+                excludedIds: excludedIds || []
+            };
+
+            const stream = await FilterService.getCsvStream({
+                ...filters,
+                selection: finalSelection
             });
 
-            return res.json({
-                total_encontrados: amostra.length,
-                dados: amostra
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=export.csv');
+
+            // Header
+            res.write('CNPJ;NOME FANTASIA;RAZAO SOCIAL;UF;MUNICIPIO;CNAE;EMAIL;TELEFONE 1;TELEFONE 2\n');
+
+            stream.on('data', row => {
+                const line = [
+                    row.cnpj,
+                    row.nome_fantasia || '',
+                    row.razao_social || '',
+                    row.uf || '',
+                    row.municipio || '',
+                    row.cnae_fiscal_principal || '',
+                    row.correio_eletronico || '',
+                    row.telefone1 ? `(${row.ddd1 || ''}) ${row.telefone1}` : '',
+                    row.telefone2 ? `(${row.ddd2 || ''}) ${row.telefone2}` : ''
+                ].join(';');
+                res.write(line + '\n');
             });
 
+            stream.on('end', () => res.end());
+            stream.on('error', err => {
+                console.error('Export stream error:', err);
+                res.status(500).end();
+            });
+        } catch (error) {
+            console.error("ERRO exportCsv:", error);
+            return res.status(500).json({ error: "Erro na exportação", details: error.message });
+        }
+    },
+
+    async debugAttributes(req, res) {
+        try {
+            const ports = await prisma.$queryRawUnsafe(`
+                SELECT porte_empresa, count(*) as total 
+                FROM cnpj.empresas 
+                GROUP BY porte_empresa 
+                ORDER BY total DESC
+            `);
+            const capitals = await prisma.empresa.findMany({
+                select: { capital_social: true },
+                take: 15
+            });
+            return res.json({ ports, capitals });
         } catch (e) {
             console.error(e);
             return res.status(500).json({ error: e.message });

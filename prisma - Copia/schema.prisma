@@ -1,0 +1,248 @@
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "windows"]
+}
+
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "cnpj"]
+}
+
+
+
+
+
+model User {
+
+  id        Int      @id @default(autoincrement())
+
+  name String   @db.VarChar(100)
+
+  email     String   @unique @db.VarChar(100)
+
+  password  String   @db.VarChar(255)
+
+  role      Role     @default(COMUM)
+
+ createdAt DateTime @default(now()) @map("created-at")
+
+ updatedAt DateTime @updatedAt     @map("updated-at")
+
+
+
+  @@map("user")
+  @@schema("public")
+}
+
+
+
+enum Role {
+
+  ADMIN
+
+  COMUM
+
+  @@schema("public")
+}
+
+
+
+model Clientes {
+  id BigInt @id @default(autoincrement())
+
+  // -- identificacao e contato --
+  a1Nome    String? @map("a1-nome")
+  a1Cgc     String? @map("a1-cgc")
+  email     String?
+  a1Ddd     String? @map("a1-ddd")
+  a1Tel     String? @map("a1-tel")
+  a1Celular String? @map("a1-celular")
+  a1Tel3    String? @map("a1-tel3")
+  a1Tel4    String? @map("a1-tel4")
+  a1Tel5    String? @map("a1-tel5")
+  a1Tel6    String? @map("a1-tel6")
+  a1Tel7    String? @map("a1-tel7")
+  a1Endcob  String? @map("a1-endcob")
+  a1Bairroc String? @map("a1-bairroc")
+  a1Munc    String? @map("a1-munc")
+  a1Cepc    String? @map("a1-cepc")
+
+  // -- endereco de entrega --
+  enderecoEntrega  String? @map("endereco-entrega")
+  bairroEntrega    String? @map("bairro-entrega")
+  municipioEntrega String? @map("municipio-entrega")
+  cepEntrega       String? @map("cep-entrega")
+
+  // -- endereco de cadastro --
+  enderecoCadastro  String? @map("endereco-cadastro")
+  bairroCadastro    String? @map("bairro-cadastro")
+  municipioCadastro String? @map("municipio-cadastro")
+
+  // -- classificacao --
+  tipo        String? @map("tipo")
+  grupoVendas String? @map("grupo-vendas")
+  segmento1   String? @map("segmento1")
+  segmento2   String? @map("segmento2")
+  cria        String?
+
+  // -- metricas --
+  nrCompras Int?      @map("nr-compras")
+  a1Mcompra DateTime? @map("a1-mcompra")
+
+  // -- regionalizacao --
+  codMeso  String? @map("cod-meso")
+  meso     String?
+  codMicro String? @map("cod-micro")
+  micro    String?
+
+  // -- dados pessoais e mapa --
+  dataNascimento DateTime? @map("data-nascimento")
+  endMapa        String?   @map("end-mapa")
+
+  // -- auditoria --
+  createdAt DateTime @default(now()) @map("created-at")
+
+  // -- endereco principal (cobranca) --
+  a1Estc         String? @map("a1-estc")
+  estadoEntrega  String? @map("estado-entrega")
+  estadoCadastro String? @map("estado-cadastro")
+
+  a1Fatacum      Decimal? @map("a1-fatacum") // Aceita qualquer precisão
+  ticketMedio    Decimal? @map("ticket-medio")
+
+// --- ÁREA DE ÍNDICES (Adicione isto no final do model) ---
+  
+  // 1. Índice para busca rápida por CNPJ (exata)
+  @@index([a1Cgc])
+
+  // 2. Índice Composto: Estado e Cidade
+  // Isso otimiza buscas "Estado=SP" E "Estado=SP + Cidade=Campinas"
+  @@index([a1Estc, a1Munc])
+
+  // 3. Índice para Segmento/CNAE
+  @@index([segmento1])
+
+  // 4. (Opcional) Índice para Nome se for fazer busca "começa com..."
+  @@index([a1Nome]) 
+
+  @@map("clientes")
+  @@schema("public")
+}
+
+model audience_segment {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  description    String?
+  created_by     String?
+  cidade         String?
+  estado         String?
+  cnae           String?
+  locations      String?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  @@schema("public")
+}
+
+model Empresa {
+  cnpj_basico                     String            @id
+  razao_social                    String?
+  codigo_natureza_juridica        String?
+  codigo_qualificacao_responsavel String?
+  capital_social                  String?
+  porte_empresa                   String?
+  ente_federativo_responsavel     String?
+  
+  estabelecimentos                Estabelecimento[]
+  socios                         Socio[]
+
+  @@index([razao_social])
+  @@map("empresas")
+  @@schema("cnpj")
+}
+
+model Estabelecimento {
+  cnpj_basico               String
+  cnpj_ordem                String
+  cnpj_dv                   String
+  identificador_matriz_filial String?
+  nome_fantasia             String?
+  situacao_cadastral        String?
+  data_situacao_cadastral   String?
+  motivo_situacao_cadastral String?
+  nome_cidade_exterior      String?
+  pais                      String?
+  data_inicio_atividade     String?
+  cnae_fiscal_principal     String?
+  cnae_fiscal_secundaria    String?
+  tipo_logradouro           String?
+  logradouro                String?
+  numero                    String?
+  complemento               String?
+  bairro                    String?
+  cep                       String?
+  uf                        String?
+  municipio                 String?
+  ddd1                      String?
+  telefone1                 String?
+  ddd2                      String?
+  telefone2                 String?
+  ddd_fax                   String?
+  fax                       String?
+  correio_eletronico        String?
+  situacao_especial         String?
+  data_situacao_especial    String?
+  lat                       String?
+  long                      String?
+  situation                 String?
+  classification            String?
+
+  empresa                   Empresa @relation(fields: [cnpj_basico], references: [cnpj_basico])
+
+  @@index([cnpj_basico])
+  @@index([uf])
+  @@index([municipio])
+  @@index([cnae_fiscal_principal])
+  @@index([uf, municipio]) 
+  @@id([cnpj_basico, cnpj_ordem, cnpj_dv])
+  @@map("estabelecimentos")
+  @@schema("cnpj")
+}
+
+model Socio {
+  cnpj_basico                String
+  tipo_socio                 String?
+  nome_socio                 String
+  cnpj_cpf_socio             String
+  qualificacao_socio         String?
+  data_entrada               String?
+  pais_socio                 String?
+  representante_legal        String?
+  nome_representante         String?
+  qualificacao_representante String?
+  faixa_etaria               String?
+
+  empresa                    Empresa @relation(fields: [cnpj_basico], references: [cnpj_basico])
+
+  @@index([cnpj_basico]) // Essencial para listar sócios de uma empresa rápido
+  @@id([cnpj_basico, nome_socio, cnpj_cpf_socio])
+  @@map("socios")
+  @@schema("cnpj")
+}
+
+model Cnae {
+  codigo_cnae    String  @id
+  descricao_cnae String?
+
+  @@map("cnaes")
+  @@schema("cnpj")
+}
+model Municipio {
+  codigo_municipio String @id
+  nome_municipio   String
+
+  @@map("municipios")
+  @@schema("cnpj")
+}

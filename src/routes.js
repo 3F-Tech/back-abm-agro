@@ -25,7 +25,9 @@ router.delete('/deleteUser', AuthController.deleteUser);
 router.get('/getCnaes', CompanyController.getCnaes);
 router.post('/getAllIdsFilter', CompanyController.getAllIdsFilter);
 router.post('/getItemsByIds', CompanyController.getItemsByIds);
-router.get('/debug/cnaes', CompanyController.debugCnaes);
+router.post('/search', CompanyController.search);
+router.post('/exportCsv', CompanyController.exportCsv);
+router.get('/debug/attributes', CompanyController.debugAttributes);
 
 //Adsets
 router.get('/getAccounts', CompanyController.getContas);

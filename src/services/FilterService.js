@@ -578,14 +578,18 @@ module.exports = {
 
     // Capital Social
     const isZeroTrue = capitalSocialZero === true || String(capitalSocialZero) === "true";
-    if (isZeroTrue) {
+    if (!isZeroTrue) {
+      // Se false, NÃO deve aparecer rows com capital social zero ou nulo
       empresaWhere.AND.push({
-        OR: [
-          { capital_social: { in: ['0,00', '0.00', '0', ''] } },
-          { capital_social: null }
-        ]
+        NOT: {
+          OR: [
+            { capital_social: { in: ['0,00', '0.00', '0', ''] } },
+            { capital_social: null }
+          ]
+        }
       });
     }
+    // Se isZeroTrue for true, não adicionamos restrição, então as linhas com capital zero aparecem normalmente.
     // TODO: Implement capitalSocialMin/Max when capital_social_num exists (currently string)
     // capitalSocialMin: ${capitalSocialMin}, capitalSocialMax: ${capitalSocialMax}
 

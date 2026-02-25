@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 5769116e8dd6680e6c7cc580ab201ed9c37f0e86 Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local> 1770139637 -0300	commit (initial): feat: V1 back-end ABM AGRO
+5769116e8dd6680e6c7cc580ab201ed9c37f0e86 92e24cdcd54e2f23b02b66c75ff44deef0097f7a Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local> 1770385070 -0300	commit: feat: implement public address saving and update supabase configuration
+92e24cdcd54e2f23b02b66c75ff44deef0097f7a 5d2023182604647c254bce7a4b02a0c9aea7dacd Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local> 1770385079 -0300	pull origin main --rebase (start): checkout 5d2023182604647c254bce7a4b02a0c9aea7dacd
+5d2023182604647c254bce7a4b02a0c9aea7dacd 3e696ab1c0272b034f0dbb12bc0fb6d4921b9a64 Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local> 1770385098 -0300	rebase (continue): feat: implement public address saving and update supabase configuration
+3e696ab1c0272b034f0dbb12bc0fb6d4921b9a64 3e696ab1c0272b034f0dbb12bc0fb6d4921b9a64 Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local> 1770385123 -0300	rebase (finish): returning to refs/heads/main

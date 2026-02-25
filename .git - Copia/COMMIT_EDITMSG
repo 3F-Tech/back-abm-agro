@@ -1,0 +1,28 @@
+feat: implement public address saving and update supabase configuration
+
+# Conflicts:
+#	src/server.js
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Committer: Mateus de Souza <mateusdesouza@MacBook-Pro-de-Luis.local>
+#
+# interactive rebase in progress; onto 5d20231
+# Last command done (1 command done):
+#    pick 92e24cd # feat: implement public address saving and update supabase configuration
+# No commands remaining.
+# You are currently rebasing branch 'main' on '5d20231'.
+#
+# Changes to be committed:
+#	modified:   package-lock.json
+#	modified:   package.json
+#	modified:   prisma/schema.prisma
+#	new file:   src/config/supabase.js
+#	modified:   src/controllers/AuthController.js
+#	modified:   src/controllers/CompanyController.js
+#	modified:   src/routes.js
+#	modified:   src/server.js
+#	modified:   src/services/FilterService.js
+#	new file:   src/services/GeocodingService.js
+#
