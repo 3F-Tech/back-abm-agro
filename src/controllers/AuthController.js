@@ -5,6 +5,13 @@ exports.verifyLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: 'E-mail e senha são obrigatórios'
+            });
+        }
+
         const user = await AuthService.verifyUser(email, password);
         const token = jwt.sign(
             {
@@ -30,27 +37,22 @@ exports.verifyLogin = async (req, res) => {
         });
 
     } catch (error) {
-
         if (error.message === 'USER_NOT_FOUND') {
-            console.error("User not found");
-            return res.status(401).json({
+            return res.status(404).json({
                 success: false,
-                error: 'User not found',
-                code: '401'
+                error: 'Usuário não encontrado'
             });
         }
         if (error.message === 'INCORRECT_PASSWORD') {
-            console.error("Incorrect password");
             return res.status(401).json({
                 success: false,
-                error: 'Incorrect password',
-                code: '401'
+                error: 'Senha incorreta'
             });
         }
         console.error("Internal error:", error);
         return res.status(500).json({
             success: false,
-            error: 'Internal error in the server'
+            error: 'Erro interno no servidor'
         });
     }
 };
@@ -60,7 +62,7 @@ exports.getUsers = async (req, res) => {
         const users = await AuthService.getAllUsers();
         return res.status(200).json(users);
     } catch (error) {
-        return res.status(500).json({ error: 'Error when searching for users' });
+        return res.status(500).json({ error: 'Erro ao buscar usuários' });
     }
 };
 
@@ -69,7 +71,7 @@ exports.createUser = async (req, res) => {
         const { name, email, password, role } = req.body;
 
         if (!email || !password || !name) {
-            return res.status(400).json({ error: 'Missing required fields.' });
+            return res.status(400).json({ success: false, error: 'Preencha todos os campos obrigatórios.' });
         }
 
         const newUser = await AuthService.createUser(name, email, password, role);
@@ -88,7 +90,7 @@ exports.createUser = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'User created!',
+            message: 'Usuário criado com sucesso!',
             token: token,
             data: {
                 id: newUser.id,
@@ -98,7 +100,13 @@ exports.createUser = async (req, res) => {
             }
         });
     } catch (error) {
-        return res.status(500).json({ "error creating user": error.message });
+        if (error.message === 'EMAIL_ALREADY_EXISTS') {
+            return res.status(409).json({
+                success: false,
+                error: 'Este e-mail já está cadastrado.'
+            });
+        }
+        return res.status(500).json({ success: false, error: 'Erro ao criar usuário', details: error.message });
     }
 };
 
